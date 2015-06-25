@@ -20,8 +20,8 @@ This programme is to test the noise of a button when pressed or released. The an
 
 // Analog pushbutton settings
 #define analog_buttons_pin A2
-#define num_of_analog_buttons 2
-#define analog_buttons_r1 20  // Resistor value connected to button chain in "K's"
+#define num_of_analog_buttons 4
+#define analog_buttons_r1 12  // Resistor value connected to button chain in "K's"
 #define analog_buttons_r2 1.2 // Value of each resistor in the chain in "K's"
 #define LONG_PRESS_TIME 800 //msec before button considered a long press
 #define analog_Button_Debounce_Millis 10
