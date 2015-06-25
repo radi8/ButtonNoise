@@ -7,19 +7,19 @@
 
 /*
 This programme is to test the noise of a button when pressed or released. The analog input reads as fast
-as it can when a button is pressed and prints the value of each read together with the time in uSec from
-first change detected. This will continue for 50 mSec and is effectively a poor man's storage scope.
-*/
+ as it can when a button is pressed and prints the value of each read together with the time in uSec from
+ first change detected. This will continue for 50 mSec and is effectively a poor man's storage scope.
+ */
 
 #define LEDpin        13   // A LED is connected to this pin, use for heartbeat
 
 #define DEBUG_BUTTON_ARRAY
 //#define DEBUG_BUTTON_INFO
-#define DEBUG_BUTTONS
+//#define DEBUG_BUTTONS
 //#define DEBUG_STEP_BUTTON
 
 // Analog pushbutton settings
-#define analog_buttons_pin A6
+#define analog_buttons_pin A2
 #define num_of_analog_buttons 2
 #define analog_buttons_r1 20  // Resistor value connected to button chain in "K's"
 #define analog_buttons_r2 1.2 // Value of each resistor in the chain in "K's"
@@ -39,7 +39,7 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-  digitalWrite(analog_buttons_pin, HIGH);  // set pullup (Value 20K ohm)
+  //  digitalWrite(analog_buttons_pin, HIGH);  // set pullup (Value 20K ohm)
   initialize_analog_button_array();
 }
 
@@ -47,40 +47,92 @@ void setup() {
 
 void loop(){
   byte buttonNumber;
+  unsigned long timediff = 0;
+  unsigned long readTime = 0;
+  int analogButtonValue = 0;
+  int analog_read_temp = 0;
+  static boolean trigger = true;
 
-  buttonNumber = getAnalogButton();
-  if(buttonNumber != 0) { // 0x00 is returned with no button press
-    if(buttonNumber <= num_of_analog_buttons) {
-      // A short press trailing edge detected
-      processShortPressTE(buttonNumber);
-
+  analogButtonValue = analogRead(analog_buttons_pin);
+  if((analogButtonValue <1000) && trigger)
+  {
+    timediff = micros();
+    Serial.println("Count\tValue\tTime");
+    for(int x =1; x < 101; x++) {
+      analogButtonValue = analogRead(analog_buttons_pin);
+      readTime = readTime + (micros() - timediff);
+      timediff = micros();
+      
+      Serial.print(x);
+      Serial.print("\t");
+      Serial.print(analogButtonValue);
+      Serial.print("\t");      
+//      Serial.print(",  Read time = ");
+      Serial.println(readTime);
     }
-    else if(buttonNumber <= (num_of_analog_buttons + num_of_analog_buttons)) {
-      // A long press leading edge detected
-      buttonNumber = buttonNumber - num_of_analog_buttons;
-      processLongPressLE(buttonNumber);
-#ifdef DEBUG_BUTTON_INFO
-      Serial.print(F("Loop:  A long press leading edge detected on button "));
-      Serial.println(buttonNumber);
-#endif
-    }
-    else {
-      // A long press trailing edge detected
-      buttonNumber = buttonNumber - (num_of_analog_buttons + num_of_analog_buttons);
-      processLongPressTE(buttonNumber);
-    }
+    trigger = false;
   }
+  /*  
+   buttonNumber = getAnalogButton();  
+   if(buttonNumber != 0) { // 0x00 is returned with no button press
+   if(buttonNumber <= num_of_analog_buttons) {
+   // A short press trailing edge detected
+   processShortPressTE(buttonNumber);
+   
+   }
+   else if(buttonNumber <= (num_of_analog_buttons + num_of_analog_buttons)) {
+   // A long press leading edge detected
+   buttonNumber = buttonNumber - num_of_analog_buttons;
+   processLongPressLE(buttonNumber);
+   #ifdef DEBUG_BUTTON_INFO
+   Serial.print(F("Loop:  A long press leading edge detected on button "));
+   Serial.println(buttonNumber);
+   #endif
+   }
+   else {
+   // A long press trailing edge detected
+   buttonNumber = buttonNumber - (num_of_analog_buttons + num_of_analog_buttons);
+   processLongPressTE(buttonNumber);
+   }
+   }
+   
+   */
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Subroutines start here
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void buttonTest()
+{
+  unsigned long readTime = 0;
+  static unsigned long longPressTimer = 0;
+  int analogButtonValue = 0;
+  int analog_read_temp = 0;
+
+  analogButtonValue = analogRead(analog_buttons_pin);
+  if(analogButtonValue <1000)
+  {
+    readTime = micros();
+    analogButtonValue = analogRead(analog_buttons_pin);
+    readTime = micros() - readTime;
+
+    Serial.print("Analog value = ");
+    Serial.print(analogButtonValue);
+    Serial.print(",  Read time = ");
+    Serial.println(readTime);
+  }
+
+}
+
+/**********************************************************************************************************/
+
 void initialize_analog_button_array()
 {
   /*
    typical button values:
-
+   
    0: -56 - 46
    1: 47 - 131
    2: 132 - 203
@@ -218,4 +270,6 @@ void processLongPressTE(byte button)
 }
 
 /**********************************************************************************************************/
+
+
 
